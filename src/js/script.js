@@ -57,14 +57,15 @@ class Loader {
   constructor() {
     this.spinner = document.createElement('div'); 
     this.spinner.className = 'spinner';
-    this.spinner.innerHTML += `<img src='src/images/spinner2.gif' alt='loader' />`; 
+    this.spinner.innerHTML = `<img src='src/images/spinner-2.gif' alt='loader'/>`; 
   }
 }
 
-const loading = () =>{
+const loading = (elemToAppendTo) =>{
+  const pageLoader = new Loader();
+  elemToAppendTo.append(pageLoader.spinner);
   const loader = document.querySelector('.spinner');
-  loader.className += 'hidden';
-  
+  // loader.classList = 'hidden';
 }
 
 
@@ -78,7 +79,7 @@ class DisplayRecipe {
     a.setAttribute('href', `https://forkify-api.herokuapp.com/api/get?rId=${category.recipe_id}`);
     a.setAttribute('data-id', category.recipe_id);
     a.addEventListener('click', handleRecipePage);
-    a.innerHTML = `
+    a.innerHTML += `
         <figure class="preview__fig">
           <img src=${category.image_url} alt="Test" />
         </figure>
@@ -122,28 +123,113 @@ const validateSearchQuery = (category) => recipeArr.includes(category);
 // Search recipe
 const handleSearchRecipe = (e) => {
   e.preventDefault();
+  recipeList.innerHTML = '';
+  document.querySelector('.pagination').style.display = 'none';
   let searchQuery = document.getElementById('search').value;
   searchQuery = searchQuery.toLowerCase();
+  loading(recipeList);
   if (!validateSearchQuery(searchQuery)) {
     const errMsg = new Error('No recipes found for your query. Please try again!');
     recipe.append(errMsg.errorWrap);
   } else {
     fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
     .then((results) => {
-      const pageLoader = new Loader();
-      recipeList.append(pageLoader.spinner);
-      window.addEventListener('load', loading)
       resultArr = [];
       resultArr.push(...results.recipes);
-      resultArr.forEach((recipe) => {
-        const thisRecipe = new DisplayRecipe(recipe);
-        recipeList.appendChild(thisRecipe.li);
-        });
-      })
-      .catch((err) => {
-        // console.log(err.message);
-      });
+      paginate(resultArr)
+    })
+    .catch((err) => {
+      // console.log(err.message);
+    });
+  }  
+}
+
+
+// Pagination
+const paginate = (arr) => {
+  document.querySelector('.pagination').style.display = 'block';
+
+  // Create button
+  const prevButton = document.createElement('button');
+  prevButton.classList = 'btn--inline pagination__btn--prev';
+  prevButton.innerHTML = `
+    <svg class="search__icon">
+      <use href="src/img/icons.svg#icon-arrow-left"></use>
+    </svg>
+    <span>Prev</span>`;
+  document.querySelector('.pagination').append(prevButton);
+  
+  const nextButton = document.createElement('button');
+  nextButton.classList = 'btn--inline pagination__btn--next';
+  nextButton.innerHTML = `
+    <svg class="search__icon">
+      <use href="src/img/icons.svg#icon-arrow-left"></use>
+    </svg>
+    <span>Next</span>`;
+  document.querySelector('.pagination').append(nextButton);
+  
+  let currentPage = 1;  
+  const numberOfElementsToDisplay = 10;
+  const numPages = () => Math.ceil(arr.length / numberOfElementsToDisplay);
+
+  const changePage = (page) => {
+    const nextBtn = document.querySelector('.pagination__btn--next');
+    const prevBtn = document.querySelector('.pagination__btn--prev');
+
+    // Validate Page
+    if (page < 1) {
+      page = 1;
+    }
+
+    if (page > numPages()) {
+      page = numPages();
+    }
+
+    recipeList.innerHTML = '';
+
+    const newArr = arr.map(recipe => {
+      const thisRecipe = new DisplayRecipe(recipe);
+      return thisRecipe.li
+    });
+    
+
+    for (let i = (page - 1) * numberOfElementsToDisplay;
+    i < (page * numberOfElementsToDisplay) && i < newArr.length; i++) {
+       recipeList.appendChild(newArr[i]);
+    }
+
+    if (page === 1) {
+      prevBtn.style.visibility = 'hidden';
+    } else {
+      prevBtn.style.visibility = 'visible';
+    }
+    if (page === numPages()) {
+      nextBtn.style.visibility = 'hidden';
+    } else {
+      nextBtn.style.visibility = 'visible';
+    }
+  };
+
+  // Show Prev Page
+  const prevPage = () => {
+    if (currentPage > 1) {
+      currentPage -= 1;
+      changePage(currentPage);
+    }
   }
+  
+  // Show Next Page
+  const nextPage = () => {
+    if (currentPage < numPages()) {
+      currentPage += 1;
+      changePage(currentPage);
+    }
+  }  
+  
+  document.querySelector('.pagination__btn--prev').addEventListener('click', prevPage)
+  document.querySelector('.pagination__btn--next').addEventListener('click', nextPage)
+
+  changePage(1);
 };
 
 // create object to display each recipe details
@@ -246,6 +332,7 @@ const handleRecipePage = (e) => {
   e.preventDefault();
   const recipeId = e.target.dataset.id;
   // call fetchAPI with recipeId
+  loading(recipe);
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
     .then((results) => {
       console.log(results);
@@ -255,7 +342,8 @@ const handleRecipePage = (e) => {
         // render recipePage.card to the DOM
         recipe.append(recipePage.card, recipePage.recipeIngredients, recipePage.recipeDirections)
       }
-    }).catch((err) => {
+    })
+    .catch((err) => {
       // console.log(err.message);
     });
-};
+}
