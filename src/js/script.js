@@ -1,3 +1,4 @@
+"use strict";
 // Vegetables
 const vegetables = [
   'carrot', 'broccoli', 'asparagus', 'cauliflower', 'corn',
@@ -49,6 +50,23 @@ const form = document.querySelector('.search');
 const recipeList = document.querySelector('.results');
 const recipe = document.querySelector('.recipe');
 let resultArr = '';
+
+
+// Create Loader Object
+class Loader {
+  constructor() {
+    this.spinner = document.createElement('div'); 
+    this.spinner.className = 'spinner';
+    this.spinner.innerHTML += `<img src='src/images/spinner2.gif' alt='loader' />`; 
+  }
+}
+
+const loading = () =>{
+  const loader = document.querySelector('.spinner');
+  loader.className += 'hidden';
+  
+}
+
 
 // Recipe Class
 class DisplayRecipe {
@@ -108,15 +126,18 @@ const handleSearchRecipe = (e) => {
   searchQuery = searchQuery.toLowerCase();
   if (!validateSearchQuery(searchQuery)) {
     const errMsg = new Error('No recipes found for your query. Please try again!');
-    card.append(errMsg.errorWrap);
+    recipe.append(errMsg.errorWrap);
   } else {
     fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
-      .then((results) => {
-        resultArr = [];
-        resultArr.push(...results.recipes);
-        resultArr.forEach((recipe) => {
-          const thisRecipe = new DisplayRecipe(recipe);
-          recipeList.appendChild(thisRecipe.li);
+    .then((results) => {
+      const pageLoader = new Loader();
+      recipeList.append(pageLoader.spinner);
+      window.addEventListener('load', loading)
+      resultArr = [];
+      resultArr.push(...results.recipes);
+      resultArr.forEach((recipe) => {
+        const thisRecipe = new DisplayRecipe(recipe);
+        recipeList.appendChild(thisRecipe.li);
         });
       })
       .catch((err) => {
