@@ -125,3 +125,116 @@ const handleSearchRecipe = (e) => {
   }
 };
 
+// create object to display each recipe details
+class RecipeDetail {
+  constructor(recipe) {
+    this.card = document.createElement('div');
+    const figElement = document.createElement('figure');
+    figElement.className = 'recipe__fig';
+    figElement.innerHTML = `
+      <img src=${recipe.image_url} alt="${recipe.title}" class="recipe__img" />
+      <h1 class="recipe__title">
+        <span>${recipe.title}</span>
+      </h1>`;
+    const recipeDetails = document.createElement('div');
+    recipeDetails.className = 'recipe__details';
+    recipeDetails.innerHTML = `
+      <div class="recipe__details">
+        <div class="recipe__info">
+          <svg class="recipe__info-icon">
+            <use href="src/img/icons.svg#icon-clock"></use>
+          </svg>
+          <span class="recipe__info-data recipe__info-data--minutes">45</span>
+          <span class="recipe__info-text">minutes</span>
+        </div>
+        <div class="recipe__info">
+          <svg class="recipe__info-icon">
+            <use href="src/img/icons.svg#icon-users"></use>
+          </svg>
+          <span class="recipe__info-data recipe__info-data--people">4</span>
+          <span class="recipe__info-text">servings</span>
+
+          <div class="recipe__info-buttons">
+            <button class="btn--tiny btn--increase-servings">
+              <svg>
+                <use href="src/img/icons.svg#icon-minus-circle"></use>
+              </svg>
+            </button>
+            <button class="btn--tiny btn--increase-servings">
+              <svg>
+                <use href="src/img/icons.svg#icon-plus-circle"></use>
+              </svg>
+            </button>
+          </div>
+      </div>
+      <div class="recipe__user-generated">
+         <svg>
+          <use href="src/img/icons.svg#icon-user"></use>
+        </svg>
+      </div>
+      <button class="btn--round">
+        <svg class="">
+          <use href="src/img/icons.svg#icon-bookmark-fill"></use>
+        </svg>
+      </button>`;
+
+    this.recipeIngredients = document.createElement('div');
+    this.recipeIngredients.className = 'recipe__ingredients';
+    this.recipeIngredients.innerHTML  += `
+      <h2 class="heading--2">Recipe ingredients</h2>
+      <ul class="recipe__ingredient-list">`
+    const li = document.createElement('li');
+    li.className = "recipe__ingredient";
+    li.innerHTML += `
+      <svg class="recipe__icon">
+        <use href="src/img/icons.svg#icon-check"></use>
+      </svg>
+      <div class="recipe__quantity">1000</div>
+      <div class="recipe__description">
+        <span class="recipe__unit">g</span>
+        pasta
+      </div>`;
+    
+    this.recipeDirections = document.createElement('div');
+    this.recipeDirections.className = 'recipe__directions';
+    this.recipeDirections.innerHTML  += `
+    <h2 class="heading--2">How to cook it</h2>
+    <p class="recipe__directions-text">
+      This recipe was carefully designed and tested by
+      <span class="recipe__publisher">{publisher_url}</span>. Please check out
+      directions at their website.
+    </p>
+    <a class="btn--small recipe__btn"
+    href={publisher_url}
+    target="_blank">
+      <span>Directions</span>
+      <svg class="search__icon">
+        <use href="src/img/icons.svg#icon-arrow-right"></use>
+      </svg>
+    </a>`;
+    this.card.append(figElement);
+    this.card.append(recipeDetails);
+    this.recipeIngredients.append(li)
+  }
+}
+
+form.addEventListener('submit', handleSearchRecipe);
+
+const handleRecipePage = (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  const recipeId = e.target.dataset.id;
+  // call fetchAPI with recipeId
+  fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
+    .then((results) => {
+      console.log(results);
+      for (const obj in results) {
+        // create a new content by instantiating a new RecipeDetail class
+        const recipePage = new RecipeDetail(results[obj]);
+        // render recipePage.card to the DOM
+        recipe.append(recipePage.card, recipePage.recipeIngredients, recipePage.recipeDirections)
+      }
+    }).catch((err) => {
+      // console.log(err.message);
+    });
+};
