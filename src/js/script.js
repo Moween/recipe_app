@@ -124,6 +124,7 @@ const validateSearchQuery = (category) => recipeArr.includes(category);
 const handleSearchRecipe = (e) => {
   e.preventDefault();
   recipeList.innerHTML = '';
+  recipe.innerHTML = '';
   document.querySelector('.pagination').style.display = 'none';
   let searchQuery = document.getElementById('search').value;
   searchQuery = searchQuery.toLowerCase();
@@ -144,92 +145,97 @@ const handleSearchRecipe = (e) => {
   }  
 }
 
-
-// Pagination
-const paginate = (arr) => {
-  document.querySelector('.pagination').style.display = 'block';
-
-  // Create button
-  const prevButton = document.createElement('button');
-  prevButton.classList = 'btn--inline pagination__btn--prev';
-  prevButton.innerHTML = `
+class CreatePaginateButtons {
+  constructor() {
+  this.prevButton = document.createElement('button');
+  this.prevButton.classList = 'btn--inline pagination__btn--prev';
+  this.prevButton.innerHTML = `
     <svg class="search__icon">
       <use href="src/img/icons.svg#icon-arrow-left"></use>
     </svg>
     <span>Prev</span>`;
-  document.querySelector('.pagination').append(prevButton);
-  
-  const nextButton = document.createElement('button');
-  nextButton.classList = 'btn--inline pagination__btn--next';
-  nextButton.innerHTML = `
+    
+    this.nextButton = document.createElement('button');
+    this.nextButton.classList = 'btn--inline pagination__btn--next';
+    this.nextButton.innerHTML = `
     <svg class="search__icon">
-      <use href="src/img/icons.svg#icon-arrow-left"></use>
+    <use href="src/img/icons.svg#icon-arrow-left"></use>
     </svg>
     <span>Next</span>`;
-  document.querySelector('.pagination').append(nextButton);
-  
-  let currentPage = 1;  
-  const numberOfElementsToDisplay = 10;
-  const numPages = () => Math.ceil(arr.length / numberOfElementsToDisplay);
-
-  const changePage = (page) => {
-    const nextBtn = document.querySelector('.pagination__btn--next');
-    const prevBtn = document.querySelector('.pagination__btn--prev');
-
-    // Validate Page
-    if (page < 1) {
-      page = 1;
-    }
-
-    if (page > numPages()) {
-      page = numPages();
-    }
-
-    recipeList.innerHTML = '';
-
-    const newArr = arr.map(recipe => {
-      const thisRecipe = new DisplayRecipe(recipe);
-      return thisRecipe.li
-    });
-    
-
-    for (let i = (page - 1) * numberOfElementsToDisplay;
-    i < (page * numberOfElementsToDisplay) && i < newArr.length; i++) {
-       recipeList.appendChild(newArr[i]);
-    }
-
-    if (page === 1) {
-      prevBtn.style.visibility = 'hidden';
-    } else {
-      prevBtn.style.visibility = 'visible';
-    }
-    if (page === numPages()) {
-      nextBtn.style.visibility = 'hidden';
-    } else {
-      nextBtn.style.visibility = 'visible';
-    }
-  };
-
-  // Show Prev Page
-  const prevPage = () => {
-    if (currentPage > 1) {
-      currentPage -= 1;
-      changePage(currentPage);
-    }
+    document.querySelector('.pagination').append(this.prevButton);
+    document.querySelector('.pagination').append(this.nextButton);
   }
-  
-  // Show Next Page
-  const nextPage = () => {
-    if (currentPage < numPages()) {
-      currentPage += 1;
-      changePage(currentPage);
-    }
-  }  
-  
-  document.querySelector('.pagination__btn--prev').addEventListener('click', prevPage)
-  document.querySelector('.pagination__btn--next').addEventListener('click', nextPage)
+}
 
-  changePage(1);
+let currentPage = 1;  
+const numberOfElementsToDisplay = 10;
+const numPages = () => Math.ceil(resultArr.length / numberOfElementsToDisplay);
+
+// Pagination
+const paginate = (arr) => {
+  document.querySelector('.pagination').style.display = 'block';
+  document.querySelector('.pagination').innerHTML = '';
+  // Create buttons
+  const paginateButtons = new CreatePaginateButtons();
+  const { prevButton, nextButton } = paginateButtons; 
+
+  document.querySelector('.pagination__btn--prev').addEventListener('click', prevPage);
+  document.querySelector('.pagination__btn--next').addEventListener('click', nextPage);
+  return changePage(1);
+};
+
+// Show Prev Page
+const prevPage = () => {
+  if (currentPage > 1) {
+    currentPage -= 1;
+    return changePage(currentPage);
+  }
+}
+
+// Show Next Page
+const nextPage = () => {
+  if (currentPage < numPages()) {
+    currentPage += 1;
+    return changePage(currentPage);
+  }
+}
+
+const changePage = (page) => {
+  const nextBtn = document.querySelector('.pagination__btn--next');
+  const prevBtn = document.querySelector('.pagination__btn--prev');
+
+  // Validate Page
+  if (page < 1) {
+    page = 1;
+  }
+
+  if (page > numPages()) {
+    page = numPages();
+  }
+
+  recipeList.innerHTML = '';
+
+  const newArr = resultArr.map(recipe => {
+    const thisRecipe = new DisplayRecipe(recipe);
+    return thisRecipe.li
+  });
+  
+
+  for (let i = (page - 1) * numberOfElementsToDisplay;
+  i < (page * numberOfElementsToDisplay) && i < newArr.length; i++) {
+     recipeList.appendChild(newArr[i]);
+  }
+
+  if (page === 1) {
+    prevBtn.style.visibility = 'hidden';
+  } else {
+    prevBtn.style.visibility = 'visible';
+  }
+  if (page === numPages()) {
+    nextBtn.style.visibility = 'hidden';
+  } else {
+    nextBtn.style.visibility = 'visible';
+  }
 };
 
 // create object to display each recipe details
@@ -300,7 +306,17 @@ class RecipeDetail {
       <div class="recipe__description">
         <span class="recipe__unit">g</span>
         pasta
-      </div>`;
+      </div>
+      <li class="recipe__ingredient">
+        <svg class="recipe__icon">
+          <use href="src/img/icons.svg#icon-check"></use>
+        </svg>
+        <div class="recipe__quantity">0.5</div>
+        <div class="recipe__description">
+          <span class="recipe__unit">cup</span>
+          ricotta cheese
+        </div>
+      </li>`;
     
     this.recipeDirections = document.createElement('div');
     this.recipeDirections.className = 'recipe__directions';
@@ -330,6 +346,7 @@ form.addEventListener('submit', handleSearchRecipe);
 const handleRecipePage = (e) => {
   e.stopPropagation();
   e.preventDefault();
+  recipe.innerHTML = '';
   const recipeId = e.target.dataset.id;
   // call fetchAPI with recipeId
   loading(recipe);
