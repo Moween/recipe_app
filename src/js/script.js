@@ -51,8 +51,6 @@ const recipeList = document.querySelector('.results');
 const recipe = document.querySelector('.recipe');
 let resultArr = '';
 
-
-
 // Create Loader Object
 class Loader {
   constructor() {
@@ -70,44 +68,6 @@ const loading = (elemToAppendTo) =>{
 }
 
 
-// Recipe Class
-class DisplayRecipe {
-  constructor(category) {
-    this.li = document.createElement('li');
-    this.li.className = 'preview';
-    const a = document.createElement('a');
-    a.classList = 'preview__link preview__link--active';
-    a.setAttribute('href', `https://forkify-api.herokuapp.com/api/get?rId=${category.recipe_id}`);
-    a.setAttribute('data-id', category.recipe_id);
-    a.addEventListener('click', handleRecipePage);
-    a.innerHTML += `
-    <figure class="preview__fig">
-    <img src=${category.image_url} alt="Test" />
-    </figure>
-    <div class="preview__data">
-    <h4 class="preview__title">${category.title}</h4>
-    <p class="preview__publisher">${category.publisher}</p>
-    <div class="preview__user-generated">
-    <svg>
-    <use href="src/img/icons.svg#icon-user"></use>
-    </svg>
-    </div>
-    </div>`;
-    this.li.appendChild(a);
-  }
-}
-
-class Error {
-  constructor(message) {
-    this.errorWrap = document.createElement('div');
-    this.errorWrap.className = 'error';
-    const p = document.createElement('p');
-    p.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-    p.innerHTML += message;
-    this.errorWrap.append(p);
-  }
-}
-
 // Fetch API
 const fetchAPI = async (url) => {
   try {
@@ -117,6 +77,43 @@ const fetchAPI = async (url) => {
     throw new Error('could not fetch data');
   }
 };
+
+// Recipes
+const displaySearchData = (category) => {
+  const li = document.createElement('li');
+  li.className = 'preview';
+  li.setAttribute('data-id', category.recipe_id);
+  li.innerHTML += `
+  <a class = 'preview__link preview__link--active'
+    href=#${category.recipe_id}
+  >  
+    <figure class="preview__fig">
+      <img src=${category.image_url} alt="Test" />
+    </figure>
+    <div class="preview__data">
+      <h4 class="preview__title">${category.title}</h4>
+      <p class="preview__publisher">${category.publisher}</p>
+      <div class="preview__user-generated">
+        <svg>
+          <use href="src/img/icons.svg#icon-user"></use>
+        </svg>
+      </div>
+    </div>
+  </a>`;
+  li.addEventListener('click', handleRecipePage);
+  return li;
+}
+
+const  error = (message) => {
+  const errorWrap = document.createElement('div');
+  errorWrap.className = 'error';
+  const p = document.createElement('p');
+  p.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+  p.innerHTML += message;
+  errorWrap.append(p);
+  return errorWrap
+}
+
 
 // validate search
 const validateSearchQuery = (category) => recipeArr.includes(category);
@@ -131,8 +128,8 @@ const handleSearchRecipe = (e) => {
   searchQuery = searchQuery.toLowerCase();
   loading(recipeList);
   if (!validateSearchQuery(searchQuery)) {
-    const errMsg = new Error('No recipes found for your query. Please try again!');
-    recipe.append(errMsg.errorWrap);
+    const errMsg = error('No recipes found for your query. Please try again!');
+    recipe.append(errMsg);
   } else {
     fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
     .then((results) => {
@@ -141,11 +138,14 @@ const handleSearchRecipe = (e) => {
       paginate(resultArr)
     })
     .catch((err) => {
-      // console.log(err.message);
+      recipe.innerHTML = '';
+      const errMsg = error(err.message);
+      recipe.append(errMsg);
     });
   }  
 }
 
+// Button class
 class CreatePaginateButtons {
   constructor() {
     this.prevButton = document.createElement('button');
@@ -168,6 +168,7 @@ class CreatePaginateButtons {
   }
 }
 
+// Variables in use in the Paginate Function.
 let currentPage = 1;  
 const numberOfElementsToDisplay = 10;
 const numPages = () => Math.ceil(resultArr.length / numberOfElementsToDisplay);
@@ -182,14 +183,14 @@ const paginate = (arr) => {
   
   document.querySelector('.pagination__btn--prev').addEventListener('click', prevPage);
   document.querySelector('.pagination__btn--next').addEventListener('click', nextPage);
-  return changePage(1);
+  changePage(1);
 };
 
 // Show Prev Page
 const prevPage = () => {
   if (currentPage > 1) {
     currentPage -= 1;
-    return changePage(currentPage);
+    changePage(currentPage);
   }
 }
 
@@ -197,7 +198,7 @@ const prevPage = () => {
 const nextPage = () => {
   if (currentPage < numPages()) {
     currentPage += 1;
-    return changePage(currentPage);
+    changePage(currentPage);
   }
 }
 
@@ -217,8 +218,8 @@ const changePage = (page) => {
   recipeList.innerHTML = '';
   
   const newArr = resultArr.map(recipe => {
-    const thisRecipe = new DisplayRecipe(recipe);
-    return thisRecipe.li
+    const recipes = displaySearchData(recipe);
+    return recipes;
   });
   
   
@@ -237,150 +238,157 @@ const changePage = (page) => {
     } else {
       nextBtn.style.visibility = 'visible';
     }
-  };
-  
-// create object to display each recipe details
-class RecipeDetail {
-  constructor(recipe) {
-    this.card = document.createElement('div');
-    const figElement = document.createElement('figure');
-    figElement.className = 'recipe__fig';
-    figElement.innerHTML = `
-    <img src=${recipe.image_url} alt="${recipe.title}" class="recipe__img" />
-    <h1 class="recipe__title">
-    <span>${recipe.title}</span>
-    </h1>`;
-    const recipeDetails = document.createElement('div');
-    recipeDetails.className = 'recipe__details';
-    recipeDetails.innerHTML = `
-    <div class="recipe__details">
-    <div class="recipe__info">
-    <svg class="recipe__info-icon">
-    <use href="src/img/icons.svg#icon-clock"></use>
-    </svg>
-    <span class="recipe__info-data recipe__info-data--minutes">45</span>
-    <span class="recipe__info-text">minutes</span>
-    </div>
-    <div class="recipe__info">
-    <svg class="recipe__info-icon">
-    <use href="src/img/icons.svg#icon-users"></use>
-    </svg>
-    <span class="recipe__info-data recipe__info-data--people">4</span>
-    <span class="recipe__info-text">servings</span>
-    
-    <div class="recipe__info-buttons">
-    <button class="btn--tiny btn--increase-servings">
-    <svg>
-    <use href="src/img/icons.svg#icon-minus-circle"></use>
-    </svg>
-    </button>
-    <button class="btn--tiny btn--increase-servings">
-    <svg>
-    <use href="src/img/icons.svg#icon-plus-circle"></use>
-    </svg>
-    </button>
-    </div>
-    </div>
-    <div class="recipe__user-generated">
-    <svg>
-    <use href="src/img/icons.svg#icon-user"></use>
-    </svg>
-    </div>
-    <button class="btn--round">
-    <svg class="">
-    <use href="src/images/heart-solid.svg#myBookMark"/>
-    </svg>
-    </button>`;
-    
-    this.recipeIngredients = document.createElement('div');
-    this.recipeIngredients.className = 'recipe__ingredients';
-    this.recipeIngredients.innerHTML  += `
-    <h2 class="heading--2">Recipe ingredients</h2>
-    <ul class="recipe__ingredient-list">`
-    const li = document.createElement('li');
-    li.className = "recipe__ingredient";
-    li.innerHTML += `
-    <svg class="recipe__icon">
-    <use href="src/img/icons.svg#icon-check"></use>
-    </svg>
-    <div class="recipe__quantity">1000</div>
-    <div class="recipe__description">
-    <span class="recipe__unit">g</span>
-    pasta
-    </div>
-    <li class="recipe__ingredient">
-    <svg class="recipe__icon">
-    <use href="src/img/icons.svg#icon-check"></use>
-    </svg>
-    <div class="recipe__quantity">0.5</div>
-    <div class="recipe__description">
-    <span class="recipe__unit">cup</span>
-    ricotta cheese
-    </div>
-    </li>`;
-    
-    this.recipeDirections = document.createElement('div');
-    this.recipeDirections.className = 'recipe__directions';
-    this.recipeDirections.innerHTML  += `
-    <h2 class="heading--2">How to cook it</h2>
-    <p class="recipe__directions-text">
-    This recipe was carefully designed and tested by
-    <span class="recipe__publisher">${recipe.publisher}</span>.
-    Please check out
-    directions at their website.
-    </p>
-    <a class="btn--small recipe__btn"
-    href=${recipe.publisher_url}
-    target="_blank">
-    <span>Directions</span>
-    <svg class="search__icon">
-    <use href="src/img/icons.svg#icon-arrow-right"></use>
-    </svg>
-    </a>`;
-    this.card.append(figElement);
-    this.card.append(recipeDetails);
-    this.recipeIngredients.append(li)
-  }
-}
-  
-form.addEventListener('submit', handleSearchRecipe);
+};
 
+// fetch recipe details
 const handleRecipePage = (e) => {
   e.stopPropagation();
   e.preventDefault();
+  console.log(e.target);
   recipe.innerHTML = '';
-  const recipeId = e.target.dataset.id;
+  const recipeId = e.currentTarget.dataset.id;
   // call fetchAPI with recipeId
   loading(recipe);
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
   .then((results) => {
     console.log(results);
     for (const obj in results) {
-      // create a new content by instantiating a new RecipeDetail class
-      const recipePage = new RecipeDetail(results[obj]);
-      // render recipePage.card to the DOM
-      recipe.append(recipePage.card, recipePage.recipeIngredients, recipePage.recipeDirections)
+      recipeDetail(results[obj]);
+      // render recipePage to the DOM
+      recipe.append(recipeDetail(results[obj]))
     }
   })
   .catch((err) => {
     // console.log(err.message);
   });
 }
+
+// Display extra recipe details
+const recipeDetail = (recipe) => {
+  const card = document.createElement('div');
+  const figElement = document.createElement('figure');
+  figElement.className = 'recipe__fig';
+  figElement.innerHTML = `
+    <img src=${recipe.image_url} alt="${recipe.title}" class="recipe__img" />
+    <h1 class="recipe__title">
+      <span>${recipe.title}</span>
+    </h1>`;
+  const recipeDetails = document.createElement('div');
+  recipeDetails.className = 'recipe__details';
+  recipeDetails.innerHTML = `
+    <div class="recipe__info">
+      <svg class="recipe__info-icon">
+        <use href="src/img/icons.svg#icon-clock"></use>
+      </svg>
+      <span class="recipe__info-data recipe__info-data--minutes">45</span>
+      <span class="recipe__info-text">minutes</span>
+    </div>
+    <div class="recipe__info">
+      <svg class="recipe__info-icon">
+        <use href="src/img/icons.svg#icon-users"></use>
+      </svg>
+      <span class="recipe__info-data recipe__info-data--people">4</span>
+      <span class="recipe__info-text">servings</span>
+
+      <div class="recipe__info-buttons">
+        <button class="btn--tiny btn--increase-servings">
+          <svg>
+            <use href="src/img/icons.svg#icon-minus-circle"></use>
+          </svg>
+        </button>
+        <button class="btn--tiny btn--increase-servings">
+          <svg>
+            <use href="src/img/icons.svg#icon-plus-circle"></use>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="recipe__user-generated">
+      <svg>
+        <use href="src/img/icons.svg#icon-user"></use>
+      </svg>
+    </div>
+    <button class="btn--round">
+      <i class="far fa-heart"></i>
+    </button>`        
+      // <svg class="">
+      //   <use href="src/img/icons.svg#icon-bookmark-fill"></use>
+      // </svg>
+  card.append(figElement, recipeDetails, createRecipeIngredientsElem(recipe),
+  recipeDirectionsElement(recipe));
+  return card;  
+}
+
+const createRecipeIngredientsElem = (recipe) => {
+  let qty = '';
+  let unit = '';
+  let mainIngredient = '';
   
+  getIngredient(recipe.ingredients, qty, unit, mainIngredient);
+  const recipeIngredients = document.createElement('div');
+  recipeIngredients.className = 'recipe__ingredients';
+  recipeIngredients.innerHTML  += `
+    <h2 class="heading--2">Recipe ingredients</h2>
+    <ul class="recipe__ingredient-list"></ul>
+      <li class="recipe__ingredient">
+        <svg class="recipe__icon">
+          <use href="src/img/icons.svg#icon-check"></use>
+        </svg>
+        <div class="recipe__quantity">${qty}</div>
+          <div class="recipe__description">
+            <span class="recipe__unit">${unit}</span>
+            ${mainIngredient}
+        </div>
+      </li>`;
+  return recipeIngredients;
+}
+
+const getIngredient = (ingreArr, qty, unit, mainIngredient) => 
+{
+  ingreArr.map(item => {
+    console.log(item)  
+  })
+}
+
+
+const recipeDirectionsElement = (recipe) =>
+{
+  const recipeDirElem = document.createElement('div');
+  recipeDirElem.className = 'recipe__directions'
+  recipeDirElem.innerHTML +=`
+    <h2 class="heading--2">How to cook it</h2>
+    <p class="recipe__directions-text">
+      This recipe was carefully designed and tested by
+      <span class="recipe__publisher">${recipe.publisher}</span>. Please check out
+      directions at their website.
+    </p>
+    <a
+      class="btn--small recipe__btn"
+      href="http://thepioneerwoman.com/cooking/pasta-with-tomato-cream-sauce/"
+      target="_blank"
+    >
+      <span>Directions</span>
+      <svg class="search__icon">
+        <use href="src/img/icons.svg#icon-arrow-right"></use>
+      </svg>
+    </a>`;  
+  return recipeDirElem;
+}
+
 const randomSearch = (arr) => {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 const showRandomRecipe = () => {
   let searchQuery = randomSearch(recipeArr);
-  let resultsArr = '';
-  
+  let resultsArr = '';  
   return fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
   .then((results) => {
       resultsArr = [];
       resultsArr.push(...results.recipes);
       let recipeId = randomRecipeId(resultsArr);
-      getRecipeDetails(recipeId)
+      getRandomRecipeDetails(recipeId)
     })
     .catch((err) => {
       console.log(err.message);
@@ -400,26 +408,32 @@ const createHeadingForRandomRecipe = () =>
   return h2;
 }
 
-//Show random recipes on the homepage
-const getRecipeDetails = (recipeId) => {
+// Display recipes on the homepage
+const getRandomRecipeDetails = (recipeId) => {
   let i = 0;
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
   .then((results) => {
     for (const obj in results) {
       // create a new content by instantiating a new RecipeDetail class
-      const recipePage = new RecipeDetail(results[obj]);
       // render recipePage.card to the DOM
       createHeadingForRandomRecipe();
-      recipe.append(recipePage.card, recipePage.recipeIngredients, recipePage.recipeDirections)
+      recipe.append(recipeDetail(results[obj]))
     }
   })
   .catch((err) => {
-    // console.log(err.message);
+    console.log(err.message);
+  });
+}  
+
+// Add to Favourite 
+const addFavouriteRecipe = () => {
+  document.querySelector('.btn--round').addEventListener('dbclick', 
+  (e) => {
+    e.preventDefault();
+    const bookMarkedRecipe = localStorage.setItem('recipe', );   
   });
 }
-  
+
+// EventListeners
 window.addEventListener('load', showRandomRecipe);
-    
-
-
-
+form.addEventListener('submit', handleSearchRecipe);
