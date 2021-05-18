@@ -169,21 +169,22 @@
   margin: 5rem auto;
   text-align: center;
 
-  svg {
+  img {
     height: 6rem;
     width: 6rem;
-    fill: $color-primary;
-    animation: rotate 2s infinite linear;
+  }
+  
+  .hidden {
+    animation: rotate 1s;
+    animation-fill-mode: forwards;    
   }
 }
 
 @keyframes rotate {
-  0% {
-    transform: rotate(0);
-  }
-
   100% {
-    transform: rotate(360deg);
+    // transform: rotate(360deg);
+    opacity: 0;
+    visibility: hidden;
   }
 }
 
