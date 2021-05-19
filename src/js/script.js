@@ -49,17 +49,20 @@ const form = document.querySelector('.search');
 const recipeList = document.querySelector('.results');
 const recipe = document.querySelector('.recipe');
 let resultArr = '';
+let clicked = false;
 
-const randomSearch = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const getRandomSearch = (arr) => arr[Math.floor(Math.random() * arr.length)];
     
 const searchRandomRecipe = () => {
-  const searchQuery = randomSearch(recipeArr);
+  const searchQuery = getRandomSearch(recipeArr);
   let resultsArr = '';
   fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
     .then((results) => {
         resultsArr = [];
         resultsArr.push(...results.recipes);
-        const recipeId = randomRecipeId(resultsArr);
+        const recipeId = getRandomRecipeId(resultsArr);
+        console.log(recipeId)
         displayRandomRecipe(recipeId);
       })
     .catch((err) => {
@@ -68,7 +71,7 @@ const searchRandomRecipe = () => {
     });
 };
   
-const randomRecipeId = (arr) => arr[Math.floor(Math.random() * arr.length)].recipe_id;
+const getRandomRecipeId = (arr) => arr[Math.floor(Math.random() * arr.length)].recipe_id;
 
 // Display recipes on the homepage
 const displayRandomRecipe = (recipeId) => {
@@ -76,10 +79,9 @@ const displayRandomRecipe = (recipeId) => {
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
     .then((results) => {
       for (const obj in results) {
-        // render recipePage.card to the DOM
         recipe.innerHTML = '';
         createHeading();
-        recipe.append(getExtraRecipeDetail(results[obj]));
+        recipe.append(getExtraRecipeDetail(results[obj]));//Style the output
       }
     })
     .catch((err) => {
@@ -170,6 +172,9 @@ const handleSearchRecipe = (e) => {
   document.querySelector('.pagination').style.display = 'none';
   let searchQuery = document.getElementById('search').value;
   searchQuery = searchQuery.toLowerCase();
+  if(recipeList) {
+    
+  }
   loading(recipeList);
   if (!validateSearchQuery(searchQuery)) {
     const errMsg = error('No recipes found for your query. Please try again!');
@@ -195,18 +200,14 @@ class CreateButtons {
     this.prevButton = document.createElement('button');
     this.prevButton.classList = 'btn--inline pagination__btn--prev';
     this.prevButton.innerHTML = `
-    <svg class="search__icon">
-    <use href="src/img/icons.svg#icon-arrow-left"></use>
-    </svg>
+    <i class="fas fa-caret-left"></i>
     <span>Prev</span>`;
 
     this.nextButton = document.createElement('button');
     this.nextButton.classList = 'btn--inline pagination__btn--next';
     this.nextButton.innerHTML = `
-    <svg class="search__icon">
-    <use href="src/img/icons.svg#icon-arrow-left"></use>
-    </svg>
-    <span>Next</span>`;
+    <span>Next</span>
+    <i class="fas fa-caret-right"></i>`;
     document.querySelector('.pagination').append(this.prevButton);
     document.querySelector('.pagination').append(this.nextButton);    
   }
@@ -322,39 +323,44 @@ const getExtraRecipeDetail = (recipe) => {
   recipeDetails.innerHTML = `
     <div class="recipe__info">
       <svg class="recipe__info-icon">
-        <use href="src/img/icons.svg#icon-clock"></use>
+        <use href="src/images/stopwatch-solid.svg#icon-clock"></use>
       </svg>
       <span class="recipe__info-data recipe__info-data--minutes">45</span>
       <span class="recipe__info-text">minutes</span>
     </div>
     <div class="recipe__info">
       <svg class="recipe__info-icon">
-        <use href="src/img/icons.svg#icon-users"></use>
+        <use href="src/images/user-friends-solid.svg#icon-users"></use>
       </svg>
       <span class="recipe__info-data recipe__info-data--people">4</span>
       <span class="recipe__info-text">servings</span>
 
       <div class="recipe__info-buttons">
         <button class="btn--tiny btn--increase-servings">
-          
+          <svg>
+            <use href="src/images/minus-solid.svg#icon-minus-circle"></use>
+          </svg> 
         </button>
         <button class="btn--tiny btn--increase-servings">
-          
+          <svg>
+            <use href="src/images/plus-solid.svg#icon-plus-circle"></use>
+          </svg>
         </button>
       </div>
     </div>
 
     <div class="recipe__user-generated">
       <svg>
-        <use href="src/img/icons.svg#icon-user"></use>
+        <use href="src/img/heart.svg#icon-user"></use>
       </svg>
     </div>
     <button class="btn--round">
-      <i class="far fa-heart"></i>
+      <i class="fas fa-heart"></i>
     </button>`;
     card.append(figElement, recipeDetails, createRecipeIngredientsElem(recipe),
     recipeDirectionsElement(recipe));
-    recipeDetails.querySelector('.btn--round').addEventListener('click', addToFavourite)
+    recipeDetails.querySelector('.btn--round').addEventListener('click', toggleFavorites)
+    recipeDetails.querySelector('.btn--round .fa-heart').style.color = 'white';
   return card;
 };
 
@@ -372,7 +378,7 @@ const createRecipeIngredientsElem = (recipe) => {
     li.className = 'recipe__ingredient'
     li.innerHTML += `
     <svg class="recipe__icon">
-      <use href="src/img/icons.svg#icon-check"></use>
+      <use href="src/images/check-circle.svg#icon-check"></use>
       </svg>          
     <div class="recipe__description">
     ${ingredient}
@@ -400,7 +406,7 @@ const recipeDirectionsElement = (recipe) => {
     >
       <span>Directions</span>
       <svg class="search__icon">
-      <use href="src/img/icons.svg#icon-arrow-right"></use>
+      <use href="src/images/caret-right.svg#icon-arrow-right"></use>
       </svg>
     </a>`;
   return recipeDirElem;
@@ -408,16 +414,28 @@ const recipeDirectionsElement = (recipe) => {
 
 class recipeObj {
   constructor() {
-    this.image_url = document.querySelector('.recipe__img').src;
     this.title = document.querySelector('.recipe__title').textContent;
+    this.image_url = document.querySelector('.recipe__img').src;
     this.publisher = document.querySelector('.recipe__publisher').textContent
   }
 }
-  
+
+const toggleFavorites = (e) => {
+  e.preventDefault();
+  if(clicked) {
+    deleteFavorite();
+    clicked = false;
+  }else {
+    addToFavourite();
+    clicked = true;
+  }
+}
+
 // Add to Favourite
-const addToFavourite = (e) => {
-  e.preventDefault();  
+const addToFavourite = () => {
+  // e.preventDefault();  
   // create an arr
+  document.querySelector('.btn--round .fa-heart').style.color = 'red';
   let favorites = localStorage.getItem('favorites')
   if(favorites) {
     favorites = JSON.parse(favorites);
@@ -443,6 +461,22 @@ const handleShowFavorites = () => {
     // create and render favorites here!!!
     document.querySelector('.message p').appendChild(getRecipeData(val));    
   });
+}
+
+const deleteFavorite = (e) => {
+  // create an arr
+  document.querySelector('.btn--round .fa-heart').style.color = 'white';
+  let favorites = localStorage.getItem('favorites');
+  // Find object to delete;
+  favorites = JSON.parse(favorites)
+
+  for(let i = 0; i < favorites.length; i++) {
+    if(favorites[i].image_url == image_url) {
+      favorites.splice(i, 1);
+    }
+  }  
+  // Reset local Storage after delete
+  localStorage.setItem(JSON.stringify('favorites'));
 }
 
 
