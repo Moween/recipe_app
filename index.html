@@ -16,12 +16,15 @@
     <script src="https://kit.fontawesome.com/52e1924adf.js" crossorigin="anonymous"></script>
 
     <title>forkify // Search over 1,000,000 recipes</title>
+
+    <script src="//localhost:5500/require/client"></script>
+
   </head>
 
   <body>
     <div class="container">
       <header class="header">
-        <img src="src/img/logo.png" alt="Logo" class="header__logo" />
+        <img src="src/images/logo.png" alt="Logo" class="header__logo" />
         <form class="search">
           <input
             id="search"
@@ -30,9 +33,7 @@
             placeholder="Search over 1,000,000 recipes..."
           />
           <button type= "submit" class="btn search__btn">
-            <svg class="search__icon">
-              <use href="src/img/icons.svg#icon-search"></use>
-            </svg>
+            <i class="fas fa-search"></i>
             <span>Search</span>
           </button>
         </form>
@@ -76,28 +77,15 @@
       <div class="search-results">
         <ul class="results"></ul>
 
-        <div class="pagination">
-          <!-- <button class="btn--inline pagination__btn--prev">
-            <svg class="search__icon">
-              <use href="src/img/icons.svg#icon-arrow-left"></use>
-            </svg>
-            <span>Page 1</span>
-          </button>
-          <button class="btn--inline pagination__btn--next">
-            <span>Page 3</span>
-            <svg class="search__icon">
-              <use href="src/img/icons.svg#icon-arrow-right"></use>
-            </svg>
-          </button> -->
-        </div>
+        <div class="pagination"></div>
 
         <p class="copyright">
           &copy; Copyright by
           <a
             class="twitter-link"
             target="_blank"
-            href="https://twitter.com/jonasschmedtman"
-            >Jonas Schmedtmann</a
+            href="https://twitter.com/iamMoween"
+            >Orbie Ezeilo</a
           >. Use for learning or your portfolio. Don't use to teach. Don't claim
           as your own.
         </p>
@@ -111,15 +99,7 @@
             </svg>
           </div>
           <p>Start by searching for a recipe or an ingredient. Have fun!</p>
-        </div>
-<!-- 
-        <div class="spinner">
-          <svg>
-            <use href="src/img/icons.svg#icon-loader"></use>
-          </svg>
-        </div> -->
-
-        
+        </div>        
       </div>
     </div>
 
