@@ -49,20 +49,25 @@ const form = document.querySelector('.search');
 const recipeList = document.querySelector('.results');
 const recipe = document.querySelector('.recipe');
 let resultArr = '';
+let recipeObj = '';
 let clicked = false;
+let favorites = localStorage.getItem('favorites');
+if(favorites) {
+  favorites = JSON.parse(favorites);
+}else {
+  favorites = [];
+}
 
 
 const getRandomSearch = (arr) => arr[Math.floor(Math.random() * arr.length)];
     
 const searchRandomRecipe = () => {
   const searchQuery = getRandomSearch(recipeArr);
-  let resultsArr = '';
   fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
     .then((results) => {
         resultsArr = [];
         resultsArr.push(...results.recipes);
         const recipeId = getRandomRecipeId(resultsArr);
-        console.log(recipeId)
         displayRandomRecipe(recipeId);
       })
     .catch((err) => {
@@ -77,11 +82,12 @@ const getRandomRecipeId = (arr) => arr[Math.floor(Math.random() * arr.length)].r
 const displayRandomRecipe = (recipeId) => {
   const i = 0;
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
-    .then((results) => {
-      for (const obj in results) {
+    .then((result) => {
+      recipeObj = [result];
+      for (const obj in result) {
         recipe.innerHTML = '';
         createHeading();
-        recipe.append(getExtraRecipeDetail(results[obj]));//Style the output
+        recipe.append(getExtraRecipeDetail(result[obj]));//Style the output
       }
     })
     .catch((err) => {
@@ -288,18 +294,17 @@ const changePage = (page) => {
 const handleRecipePage = (e) => {
   e.stopPropagation();
   e.preventDefault();
-  console.log(e.target);
   recipe.innerHTML = '';
   const recipeId = e.currentTarget.dataset.id;
   // call fetchAPI with recipeId
   loading(recipe);
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
-    .then((results) => {
-      console.log(results);
-      for (const obj in results) {
-        getExtraRecipeDetail(results[obj]);
+    .then((result) => {
+      recipeObj = [result];
+      for (const obj in result) {
+        getExtraRecipeDetail(result[obj]);
         // render recipePage to the DOM
-        recipe.append(getExtraRecipeDetail(results[obj]));
+        recipe.append(getExtraRecipeDetail(result[obj]));
       }
     })
     .catch((err) => {
@@ -354,15 +359,15 @@ const getExtraRecipeDetail = (recipe) => {
         <use href="src/img/heart.svg#icon-user"></use>
       </svg>
     </div>
-    <button class="btn--round">
+    <button class="btn--round"type ="button">
       <i class="fas fa-heart"></i>
     </button>`;
     card.append(figElement, recipeDetails, createRecipeIngredientsElem(recipe),
     recipeDirectionsElement(recipe));
-    recipeDetails.querySelector('.btn--round').addEventListener('click', toggleFavorites)
-    recipeDetails.querySelector('.btn--round .fa-heart').style.color = 'white';
+   handleFavoriteEvents(recipeDetails);
   return card;
 };
+
 
 const createRecipeIngredientsElem = (recipe) => {
   const ingredientsArr = recipe.ingredients
@@ -412,30 +417,25 @@ const recipeDirectionsElement = (recipe) => {
   return recipeDirElem;
 };
 
-class recipeObj {
-  constructor() {
-    this.title = document.querySelector('.recipe__title').textContent;
-    this.image_url = document.querySelector('.recipe__img').src;
-    this.publisher = document.querySelector('.recipe__publisher').textContent
-  }
-}
-
-const toggleFavorites = (e) => {
-  e.preventDefault();
-  if(clicked) {
-    deleteFavorite();
+// handleFavoriteEvents 
+const handleFavoriteEvents = (element) => {
+  const btn = element.querySelector('.btn--round');
+  if (clicked) {
+    btn.onclick = handleDeleteFavorite;
     clicked = false;
-  }else {
-    addToFavourite();
+    btn.disabled = true;
+  } else {
+    btn.onclick = handleAddFavorite;
     clicked = true;
+    btn.disabled = false;
   }
 }
 
 // Add to Favourite
-const addToFavourite = () => {
-  // e.preventDefault();  
+const handleAddFavorite = (e) => {
+  e.preventDefault();  
+  console.log('add', e.target)
   // create an arr
-  document.querySelector('.btn--round .fa-heart').style.color = 'red';
   let favorites = localStorage.getItem('favorites')
   if(favorites) {
     favorites = JSON.parse(favorites);
@@ -443,37 +443,41 @@ const addToFavourite = () => {
     favorites = [];
   }
   // push the particular recipe (object) to the arr
-  const fav = new recipeObj();
-  favorites.push(fav);
+  const [recipe] = recipeObj
+  favorites.push(recipe);
   // save arr to localStorage; 
   localStorage.setItem('favorites', JSON.stringify(favorites));
-  handleShowFavorites();
+  handleAppendFavorites();
 };
 
-const handleShowFavorites = () => {
+const handleAppendFavorites = () => {
   let favorites = JSON.parse(localStorage.getItem('favorites'));
   if(!favorites){
     return;
-  }
-  
+  }  
   document.querySelector('.message p').innerHTML = '';
   favorites.forEach(val => {
     // create and render favorites here!!!
-    document.querySelector('.message p').appendChild(getRecipeData(val));    
+    for(const key in val) {
+      document.querySelector('.message p').appendChild(getRecipeData(val[key]));    
+    }
   });
 }
 
-const deleteFavorite = (e) => {
+const handleDeleteFavorite = (e) => {
   // create an arr
-  document.querySelector('.btn--round .fa-heart').style.color = 'white';
+  console.log('delete', e.target);
   let favorites = localStorage.getItem('favorites');
   // Find object to delete;
   favorites = JSON.parse(favorites)
-
+  let url = document.querySelector('.recipe__img').src;
   for(let i = 0; i < favorites.length; i++) {
-    if(favorites[i].image_url == image_url) {
-      favorites.splice(i, 1);
+    for(const key in favorites[i]) {
+      if(favorites[i][key].image_url == url) {
+        favorites[i].splice(i, 1);
+      }
     }
+    
   }  
   // Reset local Storage after delete
   localStorage.setItem(JSON.stringify('favorites'));
@@ -481,6 +485,5 @@ const deleteFavorite = (e) => {
 
 
 // EventListeners
-window.addEventListener('load', searchRandomRecipe, handleShowFavorites);
-window.addEventListener('load', handleShowFavorites);
+window.addEventListener('load', searchRandomRecipe, handleAppendFavorites);
 form.addEventListener('submit', handleSearchRecipe);
