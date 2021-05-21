@@ -497,7 +497,6 @@ const handleServings = (e) => {
       return;
     }
   }
-  console.log(value)
 }
 
 // EventListeners
