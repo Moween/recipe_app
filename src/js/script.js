@@ -461,7 +461,6 @@ const handleRemoveFavorite = (e) => {
   e.target.onclick = handleAddFavorite;
   e.target.style.color = 'white';
   appendFavorites();
-  handleAddFavorite();
 }
 
 
