@@ -350,19 +350,22 @@ const getExtraRecipeDetail = (recipe) => {
 
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'btn--round';  
-  btn.innerHTML = `<i class="fas fa-heart"></i>`;
+  btn.className = 'btn--round'; 
+  const faIcon = document.createElement('i');
+  faIcon.className = 'fas fa-heart';
   const fav = favorites.some(elem => elem.image_url === recipe.image_url);
   if(fav) {
     btn.onclick = handleRemoveFavorite;
-    btn.style.color = 'red';
+    faIcon.style.color = 'red';
   }else {
     btn.onclick = handleAddFavorite;
-    btn.style.color = 'white';
-  }  
+    faIcon.style.color = 'white';
+  }
+  btn.appendChild(faIcon);
   recipeDetails.append(divElem1, divElem2, btn);
-  card.append(figElement, recipeDetails, createRecipeIngredientsElem(recipe),
-  recipeDirectionsElement(recipe));
+  card.append(figElement, recipeDetails,
+    createRecipeIngredientsElem(recipe),
+    recipeDirectionsElement(recipe));
   return card;
 };
 
@@ -415,6 +418,11 @@ const recipeDirectionsElement = (recipe) => {
   return recipeDirElem;
 };
 
+const toggleFav = (e) => {
+  e.currentTarget.onclick = (e.currentTarget.onclick === handleRemoveFavorite ?
+    handleAddFavorite : handleRemoveFavorite);
+  e.target.style.color = (e.target.style.color === 'red' ? 'white' : 'red');
+}
 
 // Handle Favorite Events
 // Add to Favourite
@@ -428,8 +436,7 @@ const handleAddFavorite = (e) => {
   // save arr to localStorage; 
   favorites = [...favs];
   localStorage.setItem('favorites', JSON.stringify(favs));
-  e.target.onclick = handleRemoveFavorite;
-  e.target.style.color = 'red';
+  toggleFav(e);
   appendFavorites();
 };
 
@@ -458,11 +465,9 @@ const handleRemoveFavorite = (e) => {
   favorites = [...favs];
   // Reset local Storage after delete
   localStorage.setItem('favorites', JSON.stringify(favs));
-  e.target.onclick = handleAddFavorite;
-  e.target.style.color = 'white';
+  toggleFav(e);
   appendFavorites();
 }
-
 
 // EventListeners
 window.addEventListener('load', searchRandomRecipe);
