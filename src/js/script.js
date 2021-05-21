@@ -48,26 +48,23 @@ const recipeArr = [
 const form = document.querySelector('.search');
 const recipeList = document.querySelector('.results');
 const recipe = document.querySelector('.recipe');
-let resultArr = '';
-let recipeObj = '';
-let clicked = false;
+let resultArr;
+let recipeObj;
 let favorites = localStorage.getItem('favorites');
 if(favorites) {
   favorites = JSON.parse(favorites);
 }else {
   favorites = [];
+  localStorage.setItem('favorites', JSON.stringify([]));
 }
 
-
-const getRandomSearch = (arr) => arr[Math.floor(Math.random() * arr.length)];
     
 const searchRandomRecipe = () => {
-  const searchQuery = getRandomSearch(recipeArr);
+  const searchQuery = recipeArr[Math.floor(Math.random() * recipeArr.length)];
   fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
     .then((results) => {
-        resultsArr = [];
-        resultsArr.push(...results.recipes);
-        const recipeId = getRandomRecipeId(resultsArr);
+        resultsArr = [...results.recipes];
+        const recipeId = resultsArr[Math.floor(Math.random() * resultsArr.length)].recipe_id;
         displayRandomRecipe(recipeId);
       })
     .catch((err) => {
@@ -75,20 +72,16 @@ const searchRandomRecipe = () => {
       recipe.append(errMsg);
     });
 };
-  
-const getRandomRecipeId = (arr) => arr[Math.floor(Math.random() * arr.length)].recipe_id;
 
 // Display recipes on the homepage
 const displayRandomRecipe = (recipeId) => {
-  const i = 0;
+  loading(recipe);
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
     .then((result) => {
-      recipeObj = [result];
-      for (const obj in result) {
-        recipe.innerHTML = '';
-        createHeading();
-        recipe.append(getExtraRecipeDetail(result[obj]));//Style the output
-      }
+      recipeObj = result.recipe;
+      recipe.innerHTML = '';
+      // render recipePage to the DOM
+      recipe.append(getExtraRecipeDetail(recipeObj));
     })
     .catch((err) => {
       const errMsg = error(err.message);
@@ -99,18 +92,18 @@ const displayRandomRecipe = (recipeId) => {
 const createHeading = () => {
   const h2 = document.createElement('div');
   h2.className = 'h02';
-  h2.textContent = 'Recipe of the Day';
+  h2.textContent = 'Recipe of the Moment';
+  h2.style.color = 'lightsalmon';
   recipe.append(h2);
   return h2;
 };
-
 
 // Create Loader Object
 class Loader {
   constructor() {
     this.spinner = document.createElement('div');
     this.spinner.className = 'spinner';
-    this.spinner.innerHTML = '<img src=\'src/images/spinner-2.gif\' alt=\'loader\'/>';
+    this.spinner.innerHTML = '<img src=\'src/images/spinner.gif\' alt=\'loader\'/>';
   }
 }
 
@@ -118,7 +111,6 @@ const loading = (elemToAppendTo) => {
   const pageLoader = new Loader();
   elemToAppendTo.append(pageLoader.spinner);
   const loader = document.querySelector('.spinner');
-  // loader.classList = 'hidden';
 };
 
 // Fetch API
@@ -127,25 +119,25 @@ const fetchAPI = async (url) => {
     const response = await fetch(url);
     return response.json();
   } catch (error) {
-    throw new Error('could not fetch data');
+    throw new Error(error.message);
   }
 };
 
 // Recipes
-const getRecipeData = (category) => {
+const getRecipeData = (recipe) => {
   const li = document.createElement('li');
   li.className = 'preview';
-  li.setAttribute('data-id', category.recipe_id);
+  li.setAttribute('data-id', recipe.recipe_id);
   li.innerHTML += `
   <a class = 'preview__link preview__link--active'
-    href=#${category.recipe_id}
+    href=#${recipe.recipe_id}
   >  
     <figure class="preview__fig">
-      <img src=${category.image_url} alt="Test" />
+      <img src=${recipe.image_url} alt="Test" />
     </figure>
     <div class="preview__data">
-      <h4 class="preview__title">${category.title}</h4>
-      <p class="preview__publisher">${category.publisher}</p>
+      <h4 class="preview__title">${recipe.title}</h4>
+      <p class="preview__publisher">${recipe.publisher}</p>
       <div class="preview__user-generated">
         <svg>
           <use href="src/img/icons.svg#icon-user"></use>
@@ -168,7 +160,7 @@ const error = (message) => {
 };
 
 // validate search
-const validateSearchQuery = (category) => recipeArr.includes(category);
+const validateSearchQuery = (recipe) => recipeArr.includes(recipe);
 
 // Search recipe
 const handleSearchRecipe = (e) => {
@@ -178,9 +170,6 @@ const handleSearchRecipe = (e) => {
   document.querySelector('.pagination').style.display = 'none';
   let searchQuery = document.getElementById('search').value;
   searchQuery = searchQuery.toLowerCase();
-  if(recipeList) {
-    
-  }
   loading(recipeList);
   if (!validateSearchQuery(searchQuery)) {
     const errMsg = error('No recipes found for your query. Please try again!');
@@ -294,18 +283,16 @@ const changePage = (page) => {
 const handleRecipePage = (e) => {
   e.stopPropagation();
   e.preventDefault();
-  recipe.innerHTML = '';
   const recipeId = e.currentTarget.dataset.id;
+  recipe.innerHTML = '';
   // call fetchAPI with recipeId
   loading(recipe);
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
-    .then((result) => {
-      recipeObj = [result];
-      for (const obj in result) {
-        getExtraRecipeDetail(result[obj]);
-        // render recipePage to the DOM
-        recipe.append(getExtraRecipeDetail(result[obj]));
-      }
+  .then((result) => {
+      recipeObj = result.recipe;
+      recipe.innerHTML = '';
+      // render recipePage to the DOM
+      recipe.append(getExtraRecipeDetail(recipeObj));      
     })
     .catch((err) => {
       const errMsg = error(err.message);
@@ -332,39 +319,50 @@ const getExtraRecipeDetail = (recipe) => {
       </svg>
       <span class="recipe__info-data recipe__info-data--minutes">45</span>
       <span class="recipe__info-text">minutes</span>
-    </div>
-    <div class="recipe__info">
-      <svg class="recipe__info-icon">
-        <use href="src/images/user-friends-solid.svg#icon-users"></use>
-      </svg>
-      <span class="recipe__info-data recipe__info-data--people">4</span>
-      <span class="recipe__info-text">servings</span>
+    </div>`;
+  const divElem1 = document.createElement('div');
+  divElem1.className = "recipe__info";
+  divElem1.innerHTML = `
+    <svg class="recipe__info-icon">
+      <use href="src/images/user-friends-solid.svg#icon-users"></use>
+    </svg>
+    <span class="recipe__info-data recipe__info-data--people">4</span>
+    <span class="recipe__info-text">servings</span>
+    <div class="recipe__info-buttons"> 
+      <button class="btn--tiny btn--increase-servings">
+        <svg>
+          <use href="src/images/minus-solid.svg#icon-minus-circle"></use>
+        </svg> 
+      </button>
+      <button class="btn--tiny btn--increase-servings" id="plus-btn">
+        <svg>
+          <use href="src/images/plus-solid.svg#icon-plus-circle"></use>
+        </svg>
+      </button>
+    </div>`
 
-      <div class="recipe__info-buttons">
-        <button class="btn--tiny btn--increase-servings">
-          <svg>
-            <use href="src/images/minus-solid.svg#icon-minus-circle"></use>
-          </svg> 
-        </button>
-        <button class="btn--tiny btn--increase-servings">
-          <svg>
-            <use href="src/images/plus-solid.svg#icon-plus-circle"></use>
-          </svg>
-        </button>
-      </div>
-    </div>
+  const divElem2 =  document.createElement('div');
+  divElem2.className =  "recipe__user-generated";
+  divElem2.innerHTML = `
+    <svg>
+      <use href="src/img/heart.svg#icon-user"></use>
+    </svg>`;
 
-    <div class="recipe__user-generated">
-      <svg>
-        <use href="src/img/heart.svg#icon-user"></use>
-      </svg>
-    </div>
-    <button class="btn--round"type ="button">
-      <i class="fas fa-heart"></i>
-    </button>`;
-    card.append(figElement, recipeDetails, createRecipeIngredientsElem(recipe),
-    recipeDirectionsElement(recipe));
-   handleFavoriteEvents(recipeDetails);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn--round';  
+  btn.innerHTML = `<i class="fas fa-heart"></i>`;
+  const fav = favorites.some(elem => elem.image_url === recipe.image_url);
+  if(fav) {
+    btn.onclick = handleRemoveFavorite;
+    btn.style.color = 'red';
+  }else {
+    btn.onclick = handleAddFavorite;
+    btn.style.color = 'white';
+  }  
+  recipeDetails.append(divElem1, divElem2, btn);
+  card.append(figElement, recipeDetails, createRecipeIngredientsElem(recipe),
+  recipeDirectionsElement(recipe));
   return card;
 };
 
@@ -417,73 +415,57 @@ const recipeDirectionsElement = (recipe) => {
   return recipeDirElem;
 };
 
-// handleFavoriteEvents 
-const handleFavoriteEvents = (element) => {
-  const btn = element.querySelector('.btn--round');
-  if (clicked) {
-    btn.onclick = handleDeleteFavorite;
-    clicked = false;
-    btn.disabled = true;
-  } else {
-    btn.onclick = handleAddFavorite;
-    clicked = true;
-    btn.disabled = false;
-  }
-}
 
+// Handle Favorite Events
 // Add to Favourite
 const handleAddFavorite = (e) => {
-  e.preventDefault();  
-  console.log('add', e.target)
+  e.preventDefault(); 
   // create an arr
-  let favorites = localStorage.getItem('favorites')
-  if(favorites) {
-    favorites = JSON.parse(favorites);
-  }else {
-    favorites = [];
-  }
+  let favs = localStorage.getItem('favorites');
+  favs = JSON.parse(favs);
   // push the particular recipe (object) to the arr
-  const [recipe] = recipeObj
-  favorites.push(recipe);
+  favs.push(recipeObj);
   // save arr to localStorage; 
-  localStorage.setItem('favorites', JSON.stringify(favorites));
-  handleAppendFavorites();
+  favorites = [...favs];
+  localStorage.setItem('favorites', JSON.stringify(favs));
+  e.target.onclick = handleRemoveFavorite;
+  e.target.style.color = 'red';
+  appendFavorites();
 };
 
-const handleAppendFavorites = () => {
-  let favorites = JSON.parse(localStorage.getItem('favorites'));
-  if(!favorites){
-    return;
-  }  
-  document.querySelector('.message p').innerHTML = '';
-  favorites.forEach(val => {
+const appendFavorites = () => {  
+  document.querySelector('.bookmarks__list').innerHTML = '';
+  const favMsg = document.querySelector('.message');
+  if(!favorites.length) {
+    favMsg.style.display = 'block';
+  }else {
+    favMsg.style.display = 'none';
+  }
+  favorites.forEach(recipe => {
     // create and render favorites here!!!
-    for(const key in val) {
-      document.querySelector('.message p').appendChild(getRecipeData(val[key]));    
-    }
+    document.querySelector('.bookmarks__list').appendChild(getRecipeData(recipe));    
   });
 }
 
-const handleDeleteFavorite = (e) => {
-  // create an arr
-  console.log('delete', e.target);
-  let favorites = localStorage.getItem('favorites');
+const handleRemoveFavorite = (e) => {
+  e.preventDefault();
+  let favs = localStorage.getItem('favorites');
   // Find object to delete;
-  favorites = JSON.parse(favorites)
-  let url = document.querySelector('.recipe__img').src;
-  for(let i = 0; i < favorites.length; i++) {
-    for(const key in favorites[i]) {
-      if(favorites[i][key].image_url == url) {
-        favorites[i].splice(i, 1);
-      }
-    }
-    
-  }  
+  favs = JSON.parse(favs);
+  // Remove a single item (recipeObj) from favorite arr 
+  favs = favs.filter(elem => elem.image_url !== recipeObj.image_url);
+  // Update global favorites arr 
+  favorites = [...favs];
   // Reset local Storage after delete
-  localStorage.setItem(JSON.stringify('favorites'));
+  localStorage.setItem('favorites', JSON.stringify(favs));
+  e.target.onclick = handleAddFavorite;
+  e.target.style.color = 'white';
+  appendFavorites();
+  handleAddFavorite();
 }
 
 
 // EventListeners
-window.addEventListener('load', searchRandomRecipe, handleAppendFavorites);
+window.addEventListener('load', searchRandomRecipe);
+window.addEventListener('load', appendFavorites);
 form.addEventListener('submit', handleSearchRecipe);
