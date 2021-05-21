@@ -132,7 +132,7 @@
   &__ingredients {
     padding: 5rem 8rem;
     font-size: 1.6rem;
-    line-height: 1.4;
+    line-height: 1;
     background-color: $color-grey-light-2;
     display: flex;
     flex-direction: column;
@@ -142,7 +142,7 @@
   &__ingredient-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2.5rem 3rem;
+    gap: 2rem 3rem;
     list-style: none;
   }
 
@@ -185,3 +185,5 @@
     font-weight: 700;
   }
 }
+
+
