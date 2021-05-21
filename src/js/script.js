@@ -329,7 +329,7 @@ const getExtraRecipeDetail = (recipe) => {
     <span class="recipe__info-data recipe__info-data--people">4</span>
     <span class="recipe__info-text">servings</span>
     <div class="recipe__info-buttons"> 
-      <button class="btn--tiny btn--increase-servings">
+      <button class="btn--tiny btn--increase-servings" id="minus-btn">
         <svg>
           <use href="src/images/minus-solid.svg#icon-minus-circle"></use>
         </svg> 
@@ -339,7 +339,8 @@ const getExtraRecipeDetail = (recipe) => {
           <use href="src/images/plus-solid.svg#icon-plus-circle"></use>
         </svg>
       </button>
-    </div>`
+    </div>`;
+
 
   const divElem2 =  document.createElement('div');
   divElem2.className =  "recipe__user-generated";
@@ -366,6 +367,13 @@ const getExtraRecipeDetail = (recipe) => {
   card.append(figElement, recipeDetails,
     createRecipeIngredientsElem(recipe),
     recipeDirectionsElement(recipe));
+  const btnTiny = divElem1.querySelectorAll(".recipe__info-buttons .btn--tiny")
+  for(let i = 0; i < btnTiny.length; i+=1) {
+    btnTiny[i].addEventListener('click', (e) => {
+      handleServings(e);
+    });
+
+  }
   return card;
 };
 
@@ -440,6 +448,7 @@ const handleAddFavorite = (e) => {
   appendFavorites();
 };
 
+// Append favorite to DOM
 const appendFavorites = () => {  
   document.querySelector('.bookmarks__list').innerHTML = '';
   const favMsg = document.querySelector('.message');
@@ -454,6 +463,7 @@ const appendFavorites = () => {
   });
 }
 
+// Delete Favorite
 const handleRemoveFavorite = (e) => {
   e.preventDefault();
   let favs = localStorage.getItem('favorites');
@@ -467,6 +477,27 @@ const handleRemoveFavorite = (e) => {
   localStorage.setItem('favorites', JSON.stringify(favs));
   toggleFav(e);
   appendFavorites();
+}
+
+// Handle Servings
+const handleServings = (e) => {
+  let value = document.querySelector('.recipe__info .recipe__info-data--people').textContent;
+  value = Number(value);
+  if(e.currentTarget.id === 'plus-btn') {
+    value += 1;
+    document.querySelector('.recipe__info .recipe__info-data--people')
+      .textContent = value;
+  }else if(e.currentTarget.id === 'minus-btn') {
+    if(value !== 1) {
+      value -= 1;
+      document.querySelector('.recipe__info .recipe__info-data--people')
+      .textContent = value;
+      // return;
+    } else {
+      return;
+    }
+  }
+  console.log(value)
 }
 
 // EventListeners
