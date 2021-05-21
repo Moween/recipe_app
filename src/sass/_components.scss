@@ -176,20 +176,7 @@
   img {
     height: 6rem;
     width: 6rem;
-  }
-  
-  .hidden {
-    animation: rotate 1s;
-    animation-fill-mode: forwards;    
-  }
-}
-
-@keyframes rotate {
-  100% {
-    // transform: rotate(360deg);
-    opacity: 0;
-    visibility: hidden;
-  }
+  }  
 }
 
 .message,
