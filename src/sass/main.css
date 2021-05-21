@@ -255,27 +255,6 @@ body {
   width: 6rem;
 }
 
-.spinner .hidden {
-  -webkit-animation: rotate 1s;
-          animation: rotate 1s;
-  -webkit-animation-fill-mode: forwards;
-          animation-fill-mode: forwards;
-}
-
-@-webkit-keyframes rotate {
-  100% {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
-@keyframes rotate {
-  100% {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
 .message,
 .error {
   max-width: 40rem;
