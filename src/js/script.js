@@ -81,6 +81,7 @@ const displayRandomRecipe = (recipeId) => {
       recipeObj = result.recipe;
       recipe.innerHTML = '';
       // render recipePage to the DOM
+      createHeading();
       recipe.append(getExtraRecipeDetail(recipeObj));
     })
     .catch((err) => {
@@ -177,6 +178,7 @@ const handleSearchRecipe = (e) => {
   } else {
     fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
       .then((results) => {
+        //results is an object with a recipe key in it 
         resultArr = [];
         resultArr.push(...results.recipes);
         paginate(resultArr);
@@ -288,7 +290,7 @@ const handleRecipePage = (e) => {
   // call fetchAPI with recipeId
   loading(recipe);
   fetchAPI(`https://forkify-api.herokuapp.com/api/get?rId=${recipeId}`)
-  .then((result) => {
+    .then((result) => {
       recipeObj = result.recipe;
       recipe.innerHTML = '';
       // render recipePage to the DOM
@@ -356,11 +358,11 @@ const getExtraRecipeDetail = (recipe) => {
   faIcon.className = 'fas fa-heart';
   const fav = favorites.some(elem => elem.image_url === recipe.image_url);
   if(fav) {
-    btn.onclick = handleRemoveFavorite;
     faIcon.style.color = 'red';
+    btn.onclick = handleRemoveFavorite;
   }else {
-    btn.onclick = handleAddFavorite;
     faIcon.style.color = 'white';
+    btn.onclick = handleAddFavorite;
   }
   btn.appendChild(faIcon);
   recipeDetails.append(divElem1, divElem2, btn);
