@@ -393,12 +393,12 @@ const createRecipeIngredientsElem = (recipe) => {
     const li = document.createElement('li');
     li.className = 'recipe__ingredient'
     li.innerHTML += `
-    <svg class="recipe__icon">
-      <use href="src/images/check-circle.svg#icon-check"></use>
+      <svg class="recipe__icon">
+        <use href="src/images/check-circle.svg#icon-check"></use>
       </svg>          
-    <div class="recipe__description">
-    ${ingredient}
-    </div>`;
+      <div class="recipe__description">
+      ${ingredient}
+      </div>`;
     ulElem.append(li)
   }
   divElem.append(h2Elem, ulElem);
