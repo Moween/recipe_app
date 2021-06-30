@@ -51,22 +51,21 @@ const recipe = document.querySelector('.recipe');
 let resultArr;
 let recipeObj;
 let favorites = localStorage.getItem('favorites');
-if(favorites) {
+if (favorites) {
   favorites = JSON.parse(favorites);
-}else {
+} else {
   favorites = [];
   localStorage.setItem('favorites', JSON.stringify([]));
 }
 
-    
 const searchRandomRecipe = () => {
   const searchQuery = recipeArr[Math.floor(Math.random() * recipeArr.length)];
   fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
     .then((results) => {
-        resultsArr = [...results.recipes];
-        const recipeId = resultsArr[Math.floor(Math.random() * resultsArr.length)].recipe_id;
-        displayRandomRecipe(recipeId);
-      })
+      const resultsArr = [...results.recipes];
+      const recipeId = resultsArr[Math.floor(Math.random() * resultsArr.length)].recipe_id;
+      displayRandomRecipe(recipeId);
+    })
     .catch((err) => {
       const errMsg = error(err.message);
       recipe.append(errMsg);
@@ -178,7 +177,7 @@ const handleSearchRecipe = (e) => {
   } else {
     fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
       .then((results) => {
-        //results is an object with a recipe key in it 
+        // results is an object with a recipe key in it
         resultArr = [];
         resultArr.push(...results.recipes);
         paginate(resultArr);
@@ -206,7 +205,7 @@ class CreateButtons {
     <span>Next</span>
     <i class="fas fa-caret-right"></i>`;
     document.querySelector('.pagination').append(this.prevButton);
-    document.querySelector('.pagination').append(this.nextButton);    
+    document.querySelector('.pagination').append(this.nextButton);
   }
 }
 
@@ -216,7 +215,7 @@ const numberOfElementsToDisplay = 10;
 const numPages = () => Math.ceil(resultArr.length / numberOfElementsToDisplay);
 
 // Pagination
-const paginate = (arr) => {
+const paginate = () => {
   document.querySelector('.pagination').style.display = 'block';
   document.querySelector('.pagination').innerHTML = '';
   // Create buttons
@@ -265,7 +264,7 @@ const changePage = (page) => {
   });
 
   for (let i = (page - 1) * numberOfElementsToDisplay;
-    i < (page * numberOfElementsToDisplay) && i < newArr.length; i++) {
+    i < (page * numberOfElementsToDisplay) && i < newArr.length; i += 1) {
     recipeList.appendChild(newArr[i]);
   }
 
@@ -294,7 +293,7 @@ const handleRecipePage = (e) => {
       recipeObj = result.recipe;
       recipe.innerHTML = '';
       // render recipePage to the DOM
-      recipe.append(getExtraRecipeDetail(recipeObj));      
+      recipe.append(getExtraRecipeDetail(recipeObj));
     })
     .catch((err) => {
       const errMsg = error(err.message);
@@ -323,7 +322,7 @@ const getExtraRecipeDetail = (recipe) => {
       <span class="recipe__info-text">minutes</span>
     </div>`;
   const divElem1 = document.createElement('div');
-  divElem1.className = "recipe__info";
+  divElem1.className = 'recipe__info';
   divElem1.innerHTML = `
     <svg class="recipe__info-icon">
       <use href="src/images/user-friends-solid.svg#icon-users"></use>
@@ -343,9 +342,8 @@ const getExtraRecipeDetail = (recipe) => {
       </button>
     </div>`;
 
-
-  const divElem2 =  document.createElement('div');
-  divElem2.className =  "recipe__user-generated";
+  const divElem2 = document.createElement('div');
+  divElem2.className = 'recipe__user-generated';
   divElem2.innerHTML = `
     <svg>
       <use href="src/img/heart.svg#icon-user"></use>
@@ -353,14 +351,14 @@ const getExtraRecipeDetail = (recipe) => {
 
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.className = 'btn--round'; 
+  btn.className = 'btn--round';
   const faIcon = document.createElement('i');
   faIcon.className = 'fas fa-heart';
-  const fav = favorites.some(elem => elem.image_url === recipe.image_url);
-  if(fav) {
+  const fav = favorites.some((elem) => elem.image_url === recipe.image_url);
+  if (fav) {
     faIcon.style.color = 'red';
     btn.onclick = handleRemoveFavorite;
-  }else {
+  } else {
     faIcon.style.color = 'white';
     btn.onclick = handleAddFavorite;
   }
@@ -369,29 +367,27 @@ const getExtraRecipeDetail = (recipe) => {
   card.append(figElement, recipeDetails,
     createRecipeIngredientsElem(recipe),
     recipeDirectionsElement(recipe));
-  const btnTiny = divElem1.querySelectorAll(".recipe__info-buttons .btn--tiny")
-  for(let i = 0; i < btnTiny.length; i+=1) {
+  const btnTiny = divElem1.querySelectorAll('.recipe__info-buttons .btn--tiny');
+  for (let i = 0; i < btnTiny.length; i += 1) {
     btnTiny[i].addEventListener('click', (e) => {
       handleServings(e);
     });
-
   }
   return card;
 };
 
-
 const createRecipeIngredientsElem = (recipe) => {
-  const ingredientsArr = recipe.ingredients
+  const ingredientsArr = recipe.ingredients;
   const divElem = document.createElement('div');
   divElem.className = 'recipe__ingredients';
   const h2Elem = document.createElement('h2');
   h2Elem.className = 'heading--2';
   h2Elem.textContent = 'Recipe ingredients';
-  const ulElem = document.createElement('ul')
-  ulElem.className = 'recipe__ingredient-list'
-  for(const ingredient of ingredientsArr) {
+  const ulElem = document.createElement('ul');
+  ulElem.className = 'recipe__ingredient-list';
+  for (const ingredient of ingredientsArr) {
     const li = document.createElement('li');
-    li.className = 'recipe__ingredient'
+    li.className = 'recipe__ingredient';
     li.innerHTML += `
       <svg class="recipe__icon">
         <use href="src/images/check-circle.svg#icon-check"></use>
@@ -399,7 +395,7 @@ const createRecipeIngredientsElem = (recipe) => {
       <div class="recipe__description">
       ${ingredient}
       </div>`;
-    ulElem.append(li)
+    ulElem.append(li);
   }
   divElem.append(h2Elem, ulElem);
   return divElem;
@@ -429,21 +425,21 @@ const recipeDirectionsElement = (recipe) => {
 };
 
 const toggleFav = (e) => {
-  e.currentTarget.onclick = (e.currentTarget.onclick === handleRemoveFavorite ?
-    handleAddFavorite : handleRemoveFavorite);
+  e.currentTarget.onclick = (e.currentTarget.onclick === handleRemoveFavorite
+    ? handleAddFavorite : handleRemoveFavorite);
   e.target.style.color = (e.target.style.color === 'red' ? 'white' : 'red');
-}
+};
 
 // Handle Favorite Events
 // Add to Favourite
 const handleAddFavorite = (e) => {
-  e.preventDefault(); 
+  e.preventDefault();
   // create an arr
   let favs = localStorage.getItem('favorites');
   favs = JSON.parse(favs);
   // push the particular recipe (object) to the arr
   favs.push(recipeObj);
-  // save arr to localStorage; 
+  // save arr to localStorage;
   favorites = [...favs];
   localStorage.setItem('favorites', JSON.stringify(favs));
   toggleFav(e);
@@ -451,19 +447,19 @@ const handleAddFavorite = (e) => {
 };
 
 // Append favorite to DOM
-const appendFavorites = () => {  
+const appendFavorites = () => {
   document.querySelector('.bookmarks__list').innerHTML = '';
   const favMsg = document.querySelector('.message');
-  if(!favorites.length) {
+  if (!favorites.length) {
     favMsg.style.display = 'block';
-  }else {
+  } else {
     favMsg.style.display = 'none';
   }
-  favorites.forEach(recipe => {
+  favorites.forEach((recipe) => {
     // create and render favorites here!!!
-    document.querySelector('.bookmarks__list').appendChild(getRecipeData(recipe));    
+    document.querySelector('.bookmarks__list').appendChild(getRecipeData(recipe));
   });
-}
+};
 
 // Delete Favorite
 const handleRemoveFavorite = (e) => {
@@ -471,35 +467,33 @@ const handleRemoveFavorite = (e) => {
   let favs = localStorage.getItem('favorites');
   // Find object to delete;
   favs = JSON.parse(favs);
-  // Remove a single item (recipeObj) from favorite arr 
-  favs = favs.filter(elem => elem.image_url !== recipeObj.image_url);
-  // Update global favorites arr 
+  // Remove a single item (recipeObj) from favorite arr
+  favs = favs.filter((elem) => elem.image_url !== recipeObj.image_url);
+  // Update global favorites arr
   favorites = [...favs];
   // Reset local Storage after delete
   localStorage.setItem('favorites', JSON.stringify(favs));
   toggleFav(e);
   appendFavorites();
-}
+};
 
 // Handle Servings
 const handleServings = (e) => {
   let value = document.querySelector('.recipe__info .recipe__info-data--people').textContent;
   value = Number(value);
-  if(e.currentTarget.id === 'plus-btn') {
+  if (e.currentTarget.id === 'plus-btn') {
     value += 1;
     document.querySelector('.recipe__info .recipe__info-data--people')
       .textContent = value;
-  }else if(e.currentTarget.id === 'minus-btn') {
-    if(value !== 1) {
+  } else if (e.currentTarget.id === 'minus-btn') {
+    if (value !== 1) {
       value -= 1;
       document.querySelector('.recipe__info .recipe__info-data--people')
-      .textContent = value;
+        .textContent = value;
       // return;
-    } else {
-      return;
     }
   }
-}
+};
 
 // EventListeners
 window.addEventListener('load', searchRandomRecipe);
