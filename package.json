@@ -1,0 +1,31 @@
+{
+  "name": "recipe_app",
+  "version": "1.0.0",
+  "description": "## sca-c4 capstone project This app is built with only vanilla javascript with the following functionalities:- - It searches out recipes by name from a recipe database. - Bookmarks favourite recipes. - Displays recipes details. - Increments recipes ingredients depending on user's servings.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Moween/recipe_app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Moween/recipe_app/issues"
+  },
+  "homepage": "https://github.com/Moween/recipe_app#readme",
+  "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/eslint-parser": "^7.14.7",
+    "@babel/plugin-syntax-jsx": "^7.14.5",
+    "@babel/preset-react": "^7.14.5",
+    "eslint": "^7.29.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0"
+  }
+}
