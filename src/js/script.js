@@ -58,6 +58,39 @@ if (favorites) {
   localStorage.setItem('favorites', JSON.stringify([]));
 }
 
+const createHeading = () => {
+  const h2 = document.createElement('div');
+  h2.className = 'h02';
+  h2.textContent = 'Recipe of the Moment';
+  h2.style.color = 'lightsalmon';
+  recipe.append(h2);
+  return h2;
+};
+
+// Create Loader Object
+class Loader {
+  constructor() {
+    this.spinner = document.createElement('div');
+    this.spinner.className = 'spinner';
+    this.spinner.innerHTML = '<img src=\'src/images/spinner.gif\' alt=\'loader\'/>';
+  }
+}
+
+const loading = (elemToAppendTo) => {
+  const pageLoader = new Loader();
+  elemToAppendTo.append(pageLoader.spinner);
+};
+
+// Fetch API
+const fetchAPI = async (url) => {
+  try {
+    const response = await fetch(url);
+    return response.json();
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 const searchRandomRecipe = () => {
   const searchQuery = recipeArr[Math.floor(Math.random() * recipeArr.length)];
   fetchAPI(`https://forkify-api.herokuapp.com/api/search?q=${searchQuery}`)
@@ -87,40 +120,6 @@ const displayRandomRecipe = (recipeId) => {
       const errMsg = error(err.message);
       recipe.append(errMsg);
     });
-};
-
-const createHeading = () => {
-  const h2 = document.createElement('div');
-  h2.className = 'h02';
-  h2.textContent = 'Recipe of the Moment';
-  h2.style.color = 'lightsalmon';
-  recipe.append(h2);
-  return h2;
-};
-
-// Create Loader Object
-class Loader {
-  constructor() {
-    this.spinner = document.createElement('div');
-    this.spinner.className = 'spinner';
-    this.spinner.innerHTML = '<img src=\'src/images/spinner.gif\' alt=\'loader\'/>';
-  }
-}
-
-const loading = (elemToAppendTo) => {
-  const pageLoader = new Loader();
-  elemToAppendTo.append(pageLoader.spinner);
-  const loader = document.querySelector('.spinner');
-};
-
-// Fetch API
-const fetchAPI = async (url) => {
-  try {
-    const response = await fetch(url);
-    return response.json();
-  } catch (error) {
-    throw new Error(error.message);
-  }
 };
 
 // Recipes
