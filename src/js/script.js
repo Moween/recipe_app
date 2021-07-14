@@ -203,8 +203,6 @@ class CreateButtons {
     this.nextButton.innerHTML = `
     <span>Next</span>
     <i class="fas fa-caret-right"></i>`;
-    document.querySelector('.pagination').append(this.prevButton);
-    document.querySelector('.pagination').append(this.nextButton);
   }
 }
 
@@ -221,6 +219,8 @@ const paginate = () => {
   const paginateButtons = new CreateButtons();
   const { prevButton, nextButton } = paginateButtons;
 
+  document.querySelector('.pagination').append(prevButton);
+  document.querySelector('.pagination').append(nextButton);
   document.querySelector('.pagination__btn--prev').addEventListener('click', prevPage);
   document.querySelector('.pagination__btn--next').addEventListener('click', nextPage);
   changePage(1);
