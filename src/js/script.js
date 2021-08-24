@@ -184,7 +184,10 @@ const handleSearchRecipe = (e) => {
       .catch((err) => {
         recipe.innerHTML = '';
         const errMsg = error(err.message);
-        recipe.append(errMsg);
+        recipeList.append(errMsg);
+      })
+      .finally(() => {
+          document.querySelector('.spinner').style.visibility = 'hidden'      
       });
   }
 };
@@ -297,6 +300,9 @@ const handleRecipePage = (e) => {
     .catch((err) => {
       const errMsg = error(err.message);
       recipe.append(errMsg);
+    })
+    .finally(() => {
+      document.querySelector('.spinner').style.visibility = 'hidden';
     });
 };
 
